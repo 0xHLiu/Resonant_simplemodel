@@ -1,0 +1,8 @@
+This is a mock up.
+
+Future Goal: distribution of model parameters
+
+Current: simple input of voices for Open-AI TTS model
+- Alloy
+- Coral
+- Ash
