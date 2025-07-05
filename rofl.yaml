@@ -3,11 +3,11 @@ version: 0.1.0
 tee: tdx
 kind: container
 resources:
-  memory: 512
-  cpus: 1
+  memory: 2048
+  cpus: 4
   storage:
     kind: disk-persistent
-    size: 512
+    size: 8192
 artifacts:
   firmware: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.5.0/ovmf.tdx.fd#db47100a7d6a0c1f6983be224137c3f8d7cb09b63bb1c7a5ee7829d8e994a42f
   kernel: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.5.0/stage1.bin#23877530413a661e9187aad2eccfc9660fc4f1a864a1fbad2f6c7d43512071ca
@@ -30,8 +30,13 @@ deployments:
           tcb_validity_period: 30
           min_tcb_evaluation_data_number: 18
           tdx: {}
-      enclaves: []
+      enclaves:
+        - id: XGFazhqnfiL5Wvt8C/QOBX97AnVQf68OlwCFm75xTw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: GG8uliqRe1hfTcIpyI/3rLauedW867/S4fVKIPlhRSMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
       max_expiration: 3
+    secrets:
+      - name: OPEN_API_KEY
+        value: pGJwa1ggY0Th089lkBGNH8RZj4H5jcvh61zs30Xlw6EHtdLw8ldkbmFtZVgc6Afi9ZBEAC8Q9yO7rC5lAPPHHVubTobfh+ki5mVub25jZU83CA7c6rBHXIgcSAd524hldmFsdWVQoHFiCTvTGe4xqLrsb71GEA==

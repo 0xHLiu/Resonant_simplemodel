@@ -36,10 +36,57 @@ Run `oasis rofl build` to build your ROFL app.
 
 6. oasis rofl build
 
+Building a ROFL application...
+Deployment: default
+Network:    testnet
+ParaTime:   sapphire
+Debug:      false
+App ID:     rofl1qpy34aqsucvt7dhe4449htkku0mr0eh4m5u0q26x
+Name:       Resonant_simplemodel
+Version:    0.1.0
+TEE:        tdx
+Kind:       container
+Building a container-based TDX ROFL application...
+Downloading firmware artifact...
+  URI: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.5.0/ovmf.tdx.fd#db47100a7d6a0c1f6983be224137c3f8d7cb09b63bb1c7a5ee7829d8e994a42f
+  Hash: db47100a7d6a0c1f6983be224137c3f8d7cb09b63bb1c7a5ee7829d8e994a42f
+  (using cached artifact)
+Downloading kernel artifact...
+  URI: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.5.0/stage1.bin#23877530413a661e9187aad2eccfc9660fc4f1a864a1fbad2f6c7d43512071ca
+  Hash: 23877530413a661e9187aad2eccfc9660fc4f1a864a1fbad2f6c7d43512071ca
+  (using cached artifact)
+Downloading stage 2 template artifact...
+  URI: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.5.0/stage2-podman.tar.bz2#631349bef06990dd6ae882812a0420f4b35f87f9fe945b274bcfb10fc08c4ea3
+  Hash: 631349bef06990dd6ae882812a0420f4b35f87f9fe945b274bcfb10fc08c4ea3
+  (using cached artifact)
+Downloading rofl-container runtime artifact...
+  URI: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.5.2/rofl-containers#3abac3e7519588c1a4e250f1bf5cbbbd58c4e4c8ee817070031b9e0e3d4e0095
+  Hash: 3abac3e7519588c1a4e250f1bf5cbbbd58c4e4c8ee817070031b9e0e3d4e0095
+  (using cached artifact)
+Downloading compose.yaml artifact...
+  URI: compose.yaml
+Validating compose file...
+WARN[0002] The "OPENAI_API_KEY" variable is not set. Defaulting to a blank string. 
+Preparing stage 2 root filesystem...
+Unpacking template...
+Adding runtime as init...
+Runtime hash: 3abac3e7519588c1a4e250f1bf5cbbbd58c4e4c8ee817070031b9e0e3d4e0095
+Adding extra files...
+Creating squashfs filesystem...
+Creating dm-verity hash tree...
+Creating ORC bundle...
+ROFL app built and bundle written to 'Resonant_simplemodel.default.orc'.
+Computing enclave identity...
+Run `oasis rofl update` to update your ROFL app's on-chain configuration
+
 7. Setting secrets
 export OPEN_API_KEY=<INPUT>
 echo -n "$OPEN_API_KEY" | oasis rofl secret set OPEN_API_KEY -
 
 8. oasis rofl update
+
+Round:            12436997
+Transaction hash: 8ffbada861a4b1cc93e720e9498e1f4e71984c475d724b1df8dc1d1c72a16b2b
+Execution successful.
 
 9. oasis rofl deploy
