@@ -3,6 +3,7 @@ import uuid
 import tempfile
 import requests
 import subprocess
+import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -26,8 +27,25 @@ app = FastAPI(
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# Configuration for external model parameter service
-MODEL_PARAMS_URL = os.getenv("MODEL_PARAMS_URL", "https://api.example.com/model-params")
+# Configuration for Walrus aggregator, default test-net address
+AGGREGATOR_URL = os.getenv("AGGREGATOR_URL", "https://aggregator.walrus-testnet.walrus.space")
+
+async def delete_file_after_delay(file_path: Path, delay: int = 5):
+    """
+    Delete a file after a specified delay
+    
+    Args:
+        file_path: Path to the file to delete
+        delay: Delay in seconds before deletion
+    """
+    import asyncio
+    await asyncio.sleep(delay)
+    try:
+        if file_path.exists():
+            file_path.unlink()
+    except Exception:
+        pass  # Ignore errors during cleanup
+
 
 def validate_mp3_file(file_path: Path) -> bool:
     """
@@ -71,7 +89,7 @@ def validate_mp3_file(file_path: Path) -> bool:
         except Exception:
             return False
 
-async def fetch_model_parameters(storage_id: str) -> dict:
+async def fetch_model_parameters(storage_id: str) -> str:
     """
     Fetch model parameters from external service using storage_id
     
@@ -79,23 +97,25 @@ async def fetch_model_parameters(storage_id: str) -> dict:
         storage_id: The storage ID to fetch parameters for
         
     Returns:
-        dict: Model parameters from the external service
+        str: model name to use for tts-1 (ex: coral, alloy, etc.)
         
     Raises:
         HTTPException: If the external service request fails
     """
-    # If no MODEL_PARAMS_URL is set, return empty dict (bypass external service)
-    if MODEL_PARAMS_URL == "https://api.example.com/model-params":
-        return {}
-    
+
+    model_url = f"{AGGREGATOR_URL}/v1/blobs/{storage_id}"
+
     try:
-        response = requests.post(
-            MODEL_PARAMS_URL,
-            json={"storage_id": storage_id},
-            timeout=30
-        )
+        response = requests.get(model_url)
         response.raise_for_status()
-        return response.json()
+        
+        # Try to parse as JSON first, if that fails, treat as plain text
+        try:
+            return response.json()
+        except ValueError:
+            # If not JSON, return the text content (e.g., "alloy")
+            return response.text.strip()
+            
     except requests.exceptions.RequestException as e:
         raise HTTPException(
             status_code=500, 
@@ -107,9 +127,7 @@ class TextToSpeechRequest(BaseModel):
     storage_id: str
     voice: str = "alloy"  # Default voice
 
-class TextToSpeechResponse(BaseModel):
-    message: str
-    file_path: str
+
 
 @app.get("/")
 async def root():
@@ -118,7 +136,6 @@ async def root():
         "message": "Text-to-Speech API",
         "version": "1.0.0",
         "endpoints": {
-            "POST /tts": "Convert text to speech (returns file info)",
             "POST /tts/download": "Convert text to speech (returns MP3 file)",
             "GET /download/{file_id}": "Download audio file by ID",
             "GET /health": "Health check"
@@ -133,59 +150,6 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "message": "API is running"}
-
-@app.post("/tts", response_model=TextToSpeechResponse)
-async def text_to_speech(request: TextToSpeechRequest):
-    """
-    Convert text to speech and return the audio file
-    
-    Args:
-        request: TextToSpeechRequest containing text, storage_id, and voice
-        
-    Returns:
-        TextToSpeechResponse: Response with success message and file path
-    """
-    try:
-        # Validate input
-        if not request.text.strip():
-            raise HTTPException(status_code=400, detail="Text cannot be empty")
-        if not request.storage_id.strip():
-            raise HTTPException(status_code=400, detail="Storage ID cannot be empty")
-        
-        # Fetch model parameters from external service
-        model_params = await fetch_model_parameters(request.storage_id)
-        
-        # Generate unique filename
-        file_id = str(uuid.uuid4())
-        output_path = OUTPUT_DIR / f"{file_id}.mp3"
-        
-        # Call OpenAI TTS API with hardcoded model
-        response = openai.audio.speech.create(
-            model="tts-1",
-            voice=request.voice,
-            input=request.text
-        )
-        
-        # Save the audio file
-        with open(output_path, "wb") as f:
-            f.write(response.read())
-        
-        # Validate the generated MP3 file
-        if not validate_mp3_file(output_path):
-            # Clean up the invalid file
-            output_path.unlink(missing_ok=True)
-            raise HTTPException(
-                status_code=500, 
-                detail="Generated audio file is not playable. Please try again."
-            )
-        
-        return TextToSpeechResponse(
-            message="Audio generated successfully",
-            file_path=str(output_path)
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating audio: {str(e)}")
 
 @app.get("/download/{file_id}")
 async def download_audio(file_id: str):
@@ -228,16 +192,16 @@ async def text_to_speech_download(request: TextToSpeechRequest):
             raise HTTPException(status_code=400, detail="Storage ID cannot be empty")
         
         # Fetch model parameters from external service
-        model_params = await fetch_model_parameters(request.storage_id)
+        fetched_voice = await fetch_model_parameters(request.storage_id)
         
         # Generate unique filename
         file_id = str(uuid.uuid4())
         output_path = OUTPUT_DIR / f"{file_id}.mp3"
         
-        # Call OpenAI TTS API with hardcoded model
+        # Call OpenAI TTS API with fetched voice parameter
         response = openai.audio.speech.create(
             model="tts-1",
-            voice=request.voice,
+            voice=fetched_voice,
             input=request.text
         )
         
@@ -255,11 +219,16 @@ async def text_to_speech_download(request: TextToSpeechRequest):
             )
         
         # Return the file directly for download
-        return FileResponse(
+        response = FileResponse(
             path=output_path,
             media_type="audio/mpeg",
             filename=f"speech_{file_id}.mp3"
         )
+        
+        # Schedule file deletion after response is sent
+        asyncio.create_task(delete_file_after_delay(output_path, delay=5))
+        
+        return response
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating audio: {str(e)}")

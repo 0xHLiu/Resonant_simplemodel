@@ -1,0 +1,6 @@
+curl -X PUT "$PUBLISHER/v1/blobs" -d "alloy"
+
+output:
+{"newlyCreated":{"blobObject":{"id":"0x1b55744c0d99bce97492a520dda51e2cee9f82011b737726a95487fbd0674301","registeredEpoch":93,"blobId":"emHbGOU2cXUN3g-okz0FF4QDWhlhLQmDcPlZwZd2Ark","size":5,"encodingType":"RS2","certifiedEpoch":null,"storage":{"id":"0x011742672f1681e4a66a9b1871f4da79167c97bde18a47c51cc0e6ac3d3560cd","startEpoch":93,"endEpoch":94,"storageSize":66034000},"deletable":false},"resourceOperation":{"registerFromScratch":{"encodedLength":66034000,"epochsAhead":1}},"cost":11025000}}
+
+curl "$AGGREGATOR/v1/blobs/<some blob ID>"

@@ -6,3 +6,7 @@ Current: simple input of voices for Open-AI TTS model
 - Alloy
 - Coral
 - Ash
+
+
+# Test Direct Download
+curl -X POST "http://localhost:8001/tts/download" -H "Content-Type: application/json" -d '{"text": "Hello, this is a test!", "storage_id": "test_storage_123", "voice": "alloy"}' --output test_download.mp3
