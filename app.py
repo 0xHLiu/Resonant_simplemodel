@@ -24,7 +24,7 @@ app = FastAPI(
 )
 
 # Create output directory
-OUTPUT_DIR = Path("output")
+OUTPUT_DIR = Path("storage/output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 # Configuration for Walrus aggregator, default test-net address

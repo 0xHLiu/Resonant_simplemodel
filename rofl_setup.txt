@@ -1,0 +1,45 @@
+# Resonant_simplemodel
+Simplistic voice model to dockerize and test Oasis Protocol
+
+Steps:
+0. export OPENAI_API_KEY=<INPUT>
+1. docker build -t tts-app .
+2. docker run --rm -e OPENAI_API_KEY=$OPENAI_API_KEY -v $(pwd)/output:/app/output tts-app "Hello, this is a test"
+
+Container Set Up:
+1. export CR_PAT=<INPUT>
+2. echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+3. docker build -t ghcr.io/0xhliu/tts-docker-app:latest .
+4. docker push ghcr.io/0xhliu/tts-docker-app:latest
+5. docker run --rm \
+  -e OPENAI_API_KEY=$OPENAI_API_KEY \
+  -v $(pwd)/output:/app/output \
+  ghcr.io/0xhliu/tts-docker-app:latest "Text to convert"
+
+
+Oasis Protocol:
+1. Using test EVM account which gets the output address: oasis1qqnrdpvtu6em0d24xu8n63e7aj8tj4e8gss03xvr
+2. Can see from oasis wallet list
+3. Get account balance (will see in sapphire Paratime)
+oasis account show oasis1qqnrdpvtu6em0d24xu8n63e7aj8tj4e8gss03xvr --network testnet
+4. oasis rofl init
+5. oasis rofl create --network testnet
+
+Output:
+Broadcasting transaction...
+Transaction included in block successfully.
+Round:            12433966
+Transaction hash: f08b7a5da74a050f98b5b01a64c48f746d022f62957653ad42b82e4ff4ffc5e6
+Execution successful.
+Created ROFL app: rofl1qraewnhhpnhx04r4xxcswq4ff6c7qhtwxgnppvnu
+Run `oasis rofl build` to build your ROFL app.
+
+6. oasis rofl build
+
+7. Setting secrets
+export OPEN_API_KEY=<INPUT>
+echo -n "$OPEN_API_KEY" | oasis rofl secret set OPEN_API_KEY -
+
+8. oasis rofl update
+
+9. oasis rofl deploy

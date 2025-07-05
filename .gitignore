@@ -1,2 +1,3 @@
 .env
-output/*
+output/**.orc
+venv
