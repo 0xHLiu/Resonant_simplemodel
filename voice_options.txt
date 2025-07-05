@@ -2,11 +2,31 @@ This is a mock up.
 
 Future Goal: distribution of model parameters
 
-Current: simple input of voices for Open-AI TTS model
-- Alloy
-- Coral
-- Ash
+Current: simple input of voices for Open-AI TTS model (blob id)
+- Alloy (emHbGOU2cXUN3g-okz0FF4QDWhlhLQmDcPlZwZd2Ark)
+- Coral (dJaDfYsetGtg3GettcNKx6FLHeYOL91NeJ2lpX-YgLc)
+- Ash (pjrPOnimUbgB7101kb4CIg_mvmkTQ1wl2u7H36D7Gf4)
 
 
 # Test Direct Download
 curl -X POST "http://localhost:8001/tts/download" -H "Content-Type: application/json" -d '{"text": "Hello, this is a test!", "storage_id": "test_storage_123", "voice": "alloy"}' --output test_download.mp3
+
+# Docker Instructions
+
+# Build and run
+docker build -t tts-api .
+docker run -d --name tts-api -p 8001:8001 \
+  -e OPENAI_API_KEY=your_api_key_here \
+  --restart unless-stopped \
+  tts-api
+
+  curl -X POST "http://localhost:8001/tts/download" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello from Docker!",
+    "storage_id": "emHbGOU2cXUN3g-okz0FF4QDWhlhLQmDcPlZwZd2Ark",
+    "voice": "alloy"
+  }' \
+  --output speech.mp3
+
+  curl http://localhost:8001/health
