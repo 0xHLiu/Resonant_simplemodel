@@ -14,6 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
 COPY app.py .
+COPY start.sh .
+
+# Make startup script executable
+RUN chmod +x start.sh
 
 # Create output folder
 RUN mkdir -p output
@@ -25,4 +29,4 @@ EXPOSE 8001
 ENV PYTHONUNBUFFERED=1
 
 # Run the application
-CMD ["python", "app.py"]
+CMD ["./start.sh"]
